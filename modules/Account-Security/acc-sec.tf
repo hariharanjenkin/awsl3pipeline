@@ -1,32 +1,26 @@
-provider "aws" {
-  version = "~> 2.0"
-  region  = "us-west-2"
+# Bucket Creation to store CFT YAML source code
+
+resource "aws_s3_bucket" "hitech_buck" {
+  bucket = "hitech-account-security"
+  acl    = "private"
 }
 
 
-module "Account-Security"{
-  source = "./modules/Account-Security"
+# Adding CFT YAML source code into Above created S3 Bucket
+
+resource "aws_s3_bucket_object" "object" {
+  bucket = aws_s3_bucket.hitech_buck.id
+  key    = "security.yml"
+  source = "/var/lib/jenkins/workspace/Jenkins-Terrafrom-CFT-pipeline/modules/Account-Security/CFT/security.yml"
+
 }
 
 
-module "account-standardizations"{
-  source = "./modules/account-standardizations"
-  PermissionsBoundary = var.PermissionsBoundary
-  AllowUsersToChangePassword = var.AllowUsersToChangePassword
-  HardExpiry = var.HardExpiry
-  MaxPasswordAge = var.MaxPasswordAge
-  MinimumPasswordLength = var.MinimumPasswordLength
-  PasswordReusePrevention = var.PasswordReusePrevention
-  RequireLowercaseCharacters = var.RequireLowercaseCharacters
-  RequireNumbers = var.RequireNumbers
-  RequireSymbols = var.RequireSymbols
-  RequireUppercaseCharacters = var.RequireUppercaseCharacters
-  LogsRetentionInDays = var.LogsRetentionInDays
-}
+# CLOUDFORMATION CREATION 
 
-
-
-module "log-management"{
-  source = "./modules/log-management"
-  OperatorEmail = var.OperatorEmail
+resource "aws_cloudformation_stack" "acc-security" {
+  depends_on = [aws_s3_bucket_object.object]
+  name = "CFT-ACC-SECURITY"
+  disable_rollback = true
+  template_url = "https://${aws_s3_bucket.hitech_buck.id}.us-east-1.s3.amazonaws.com/security.yml"
 }
