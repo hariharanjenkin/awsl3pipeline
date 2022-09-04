@@ -1,7 +1,7 @@
 # Bucket Creation to store CFT YAML source code
 
 resource "aws_s3_bucket" "hitech_buck" {
-  bucket = "hitech-acc-std"
+  bucket = "hitech-acc-std-01"
   acl    = "private"
 }
 
@@ -38,5 +38,5 @@ resource "aws_cloudformation_stack" "acc_std" {
     PermissionsBoundary = var.PermissionsBoundary
     
     }
- template_url = "https://${aws_s3_bucket.hitech_buck.id}.us-east-1.s3.amazonaws.com/account_std.yml"
+ template_url = "https://${aws_s3_bucket.hitech_buck.id}.s3.amazonaws.com/account_std.yml"
 }
